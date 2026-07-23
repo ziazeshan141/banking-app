@@ -1,14 +1,6 @@
-stage('Verify Tools') {
-    steps {
-        sh 'java -version'
-        sh 'mvn -version'
-    }
-}
-
 pipeline {
     agent any
-    }
-
+   
     environment {
         AWS_REGION = 'us-east-2'
         ECR_REGISTRY = '047385030300.dkr.ecr.us-east-2.amazonaws.com'
@@ -17,6 +9,13 @@ pipeline {
     }
 
     stages {
+ 
+        stage('Verify Tools') {
+            steps {
+                sh 'java --version'
+                sh 'mvn -version'
+            }
+        }
 
         stage('Checkout') {
             steps {
