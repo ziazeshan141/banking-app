@@ -1,9 +1,12 @@
+stage('Verify Tools') {
+    steps {
+        sh 'java -version'
+        sh 'mvn -version'
+    }
+}
+
 pipeline {
     agent any
-
-    tools {
-        jdk 'JDK21'
-        maven 'Maven3'
     }
 
     environment {
