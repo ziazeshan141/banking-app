@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: banking-frontend
+  namespace: banking
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: banking-frontend
+
+  template:
+    metadata:
+      labels:
+        app: banking-frontend
+
+    spec:
+      containers:
+      - name: banking-frontend
+        image: 047385030300.dkr.ecr.us-east-2.amazonaws.com/banking-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
