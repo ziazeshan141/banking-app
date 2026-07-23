@@ -1,6 +1,6 @@
 pipeline {
     agent any
-   
+
     environment {
         AWS_REGION = 'us-east-2'
         ECR_REGISTRY = '047385030300.dkr.ecr.us-east-2.amazonaws.com'
@@ -9,17 +9,22 @@ pipeline {
     }
 
     stages {
- 
+
         stage('Verify Tools') {
             steps {
                 sh 'java --version'
                 sh 'mvn -version'
+                sh 'docker --version'
+                sh 'kubectl version --client'
+                sh 'aws --version'
+                sh 'trivy --version'
             }
         }
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/ziazeshan141/banking-app.git'
+                git branch: 'main',
+                    url: 'https://github.com/ziazeshan141/banking-app.git'
             }
         }
 
@@ -35,13 +40,14 @@ pipeline {
             steps {
                 dir('backend') {
                     withSonarQubeEnv('SonarQube') {
-                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                        mvn sonar:sonar \
-                        -Dsonar.projectKey=banking-app \
-                        -Dsonar.host.url=http://18.118.146.255:9000 \
-                        -Dsonar.login=$SONAR_TOKEN
-                        '''
+                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                            sh '''
+                                mvn sonar:sonar \
+                                -Dsonar.projectKey=banking-app \
+                                -Dsonar.host.url=http://18.118.146.255:9000 \
+                                -Dsonar.login=$SONAR_TOKEN
+                            '''
+                        }
                     }
                 }
             }
@@ -75,10 +81,10 @@ pipeline {
         stage('Push Images') {
             steps {
                 sh '''
-                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+                    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-                docker push $BACKEND_IMAGE
-                docker push $FRONTEND_IMAGE
+                    docker push $BACKEND_IMAGE
+                    docker push $FRONTEND_IMAGE
                 '''
             }
         }
@@ -86,11 +92,24 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
-                kubectl rollout restart deployment banking-backend -n banking
-                kubectl rollout restart deployment banking-frontend -n banking
+                    kubectl rollout restart deployment banking-backend -n banking
+                    kubectl rollout restart deployment banking-frontend -n banking
                 '''
             }
         }
+    }
 
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed!'
+        }
+
+        always {
+            cleanWs()
+        }
     }
 }
