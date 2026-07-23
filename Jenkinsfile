@@ -92,8 +92,20 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
-                    kubectl rollout restart deployment banking-backend -n banking
-                    kubectl rollout restart deployment banking-frontend -n banking
+                echo "===== KUBECONFIG ====="
+                echo $KUBECONFIG
+
+                echo "===== CURRENT CONTEXT ====="
+                kubectl config current-context
+
+                echo "===== CLUSTER INFO ====="
+                kubectl cluster-info
+
+                echo "===== SERVER ====="
+                kubectl config view --minify
+
+                kubectl rollout restart deployment banking-backend -n banking
+                kubectl rollout restart deployment banking-frontend -n banking
                 '''
             }
         }
