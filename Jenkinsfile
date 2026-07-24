@@ -92,17 +92,14 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
-                echo "===== KUBECONFIG ====="
-                echo $KUBECONFIG
+                aws sts get-caller-identity
 
-                echo "===== CURRENT CONTEXT ====="
+                aws eks update-kubeconfig \
+                --region us-east-2 \
+                --name banking-eks
+         
                 kubectl config current-context
-
-                echo "===== CLUSTER INFO ====="
-                kubectl cluster-info
-
-                echo "===== SERVER ====="
-                kubectl config view --minify
+                kubectl get nodes
 
                 kubectl rollout restart deployment banking-backend -n banking
                 kubectl rollout restart deployment banking-frontend -n banking
